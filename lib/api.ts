@@ -1,5 +1,6 @@
 import { useAppStore } from '../store/app';
 import { AuthResponse, Delivery } from '../types';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const WORKER_URL = 'https://wholesale-sync.niranjanskr06.workers.dev';
 
@@ -16,7 +17,12 @@ class DriverApi {
 
   private getHeaders(): HeadersInit {
     const session = useAppStore.getState().session;
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    const headers: HeadersInit = { 
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
     if (session?.token) {
       headers['Authorization'] = `Bearer ${session.token}`;
     }
@@ -133,31 +139,33 @@ class DriverApi {
 
   // ── Upload Receipt via Cloudflare Worker Proxy to Backblaze B2 ──
   async uploadReceipt(uri: string): Promise<{ ok: boolean; url?: string; error?: string }> {
-    const formData = new FormData();
     const filename = uri.split('/').pop() || 'receipt.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-    formData.append('file', {
-      uri,
-      name: filename,
-      type,
-    } as any);
+    try {
+      const response = await FileSystem.uploadAsync(
+        `${this.getWorkerUrl()}/driver/upload-receipt`,
+        uri,
+        {
+          fieldName: 'file',
+          httpMethod: 'POST',
+          uploadType: 1 /* MULTIPART */,
+          headers: {
+            'Authorization': `Bearer ${useAppStore.getState().session?.token}`,
+          },
+          parameters: {},
+        }
+      );
 
-    const res = await fetch(`${this.getWorkerUrl()}/driver/upload-receipt`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${useAppStore.getState().session?.token}`,
-      },
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'Upload failed');
-      return { ok: false, error: errText || 'Upload failed' };
+      if (response.status >= 200 && response.status < 300) {
+        return JSON.parse(response.body);
+      } else {
+        return { ok: false, error: response.body || 'Upload failed' };
+      }
+    } catch (err: any) {
+      return { ok: false, error: err.message || 'Upload failed' };
     }
-
-    return res.json();
   }
 }
 

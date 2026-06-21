@@ -135,8 +135,9 @@ export default function CameraCapture({ onCapture, onCancel, visible }: CameraCa
           </View>
         ) : (
           // ── Live Camera Shutter Screen ──
-          <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back">
-            <View className="flex-1 justify-between py-12 px-6">
+          <>
+            <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+            <View className="flex-1 justify-between py-12 px-6" style={StyleSheet.absoluteFill}>
               {/* Top Row close button */}
               <View className="flex-row justify-end">
                 <TouchableOpacity
@@ -160,7 +161,7 @@ export default function CameraCapture({ onCapture, onCancel, visible }: CameraCa
                 </TouchableOpacity>
               </View>
             </View>
-          </CameraView>
+          </>
         )}
       </View>
     </Modal>

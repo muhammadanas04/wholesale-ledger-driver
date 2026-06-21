@@ -34,6 +34,10 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
     if (locations && locations.length > 0) {
       const { latitude, longitude } = locations[0].coords;
       try {
+        const { session } = useAppStore.getState();
+        if (!session) {
+          await useAppStore.getState().initStore();
+        }
         await api.reportLocation(latitude, longitude);
         console.log('[BackgroundLocationTask] Reported successfully:', latitude, longitude);
       } catch (err) {

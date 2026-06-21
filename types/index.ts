@@ -5,7 +5,7 @@ export interface DeliveryItem {
   customer_name: string;           // From joined customer record, or inline
   customer_phone: string;
   address: string;
-  qty: number;                     // Required — always present
+  qty: number | null;              // Quantity (nullable from API)
   weight: number | null;           // Optional
   total_price: number | null;      // Optional, in paise
   status: 'pending' | 'done' | 'rejected';

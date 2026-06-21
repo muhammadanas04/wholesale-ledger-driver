@@ -241,8 +241,8 @@ export default function OrdersScreen() {
 
   const handleOpenEdit = (item: DeliveryItem) => {
     setEditingItem(item);
-    setEditQty(item.qty.toString());
-    setEditWeight(item.weight ? item.weight.toString() : '');
+    setEditQty(item.qty != null ? item.qty.toString() : '');
+    setEditWeight(item.weight != null ? item.weight.toString() : '');
   };
 
   const handleSaveEdit = async () => {
