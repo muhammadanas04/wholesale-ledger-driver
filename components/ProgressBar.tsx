@@ -25,7 +25,7 @@ export default function ProgressBar({ completed, total, height = 10 }: ProgressB
   return (
     <View className="flex-row items-center gap-3">
       {/* ProgressBar Track */}
-      <View style={{ height }} className="flex-1 bg-slate-200/80 rounded-full overflow-hidden">
+      <View style={{ height }} className="flex-1 bg-slate-700/80 rounded-full overflow-hidden">
         {/* ProgressBar Fill */}
         <Animated.View
           style={[{ height }, animatedStyle]}

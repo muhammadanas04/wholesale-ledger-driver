@@ -145,15 +145,15 @@ export default function ExpensesScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Main Expense Form */}
-          <Animated.View entering={FadeInDown.duration(400)} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-5 mb-6">
+          <Animated.View entering={FadeInDown.duration(400)} className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-5 mb-6">
             {/* 1. Camera Section */}
             <View>
-              <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Receipt Photo (Required)
               </Text>
 
               {imageUri ? (
-                <View className="relative w-full h-44 rounded-2xl overflow-hidden border border-slate-200">
+                <View className="relative w-full h-44 rounded-2xl overflow-hidden border border-slate-700">
                   <Image source={{ uri: imageUri }} className="w-full h-full" resizeMode="cover" />
                   <TouchableOpacity
                     onPress={() => setIsCameraVisible(true)}
@@ -179,7 +179,7 @@ export default function ExpensesScreen() {
 
             {/* 2. Category Section */}
             <View>
-              <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Category
               </Text>
               <CategoryPicker selectedCategory={category} onSelect={setCategory} />
@@ -188,7 +188,7 @@ export default function ExpensesScreen() {
             {/* 3. Dynamic Field Section (Litres vs Amount) */}
             {category && (
               <View>
-                <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                   {selectedCategoryMeta?.amountType === 'price' ? 'Amount (₹)' : 'Quantity'}
                 </Text>
                 <TextInput
@@ -197,14 +197,14 @@ export default function ExpensesScreen() {
                   keyboardType={selectedCategoryMeta?.amountType === 'price' ? 'decimal-pad' : 'number-pad'}
                   placeholder={selectedCategoryMeta?.amountPlaceholder}
                   placeholderTextColor="#94A3B8"
-                  className="w-full bg-slate-50 text-[#111115] px-4 py-3.5 rounded-2xl border border-slate-200 text-base font-bold"
+                  className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-2xl border border-slate-700 text-base font-bold"
                 />
               </View>
             )}
 
             {/* 4. Note Section */}
             <View>
-              <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Note (Optional)
               </Text>
               <TextInput
@@ -215,17 +215,17 @@ export default function ExpensesScreen() {
                 placeholder="Add any specific details about the expense"
                 placeholderTextColor="#94A3B8"
                 style={{ textAlignVertical: 'top' }}
-                className="w-full bg-slate-50 text-[#111115] px-4 py-3.5 rounded-2xl border border-slate-200 text-base font-bold h-24"
+                className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-2xl border border-slate-700 text-base font-bold h-24"
               />
             </View>
 
             {/* 5. Uploading Progress */}
             {isSubmitting && uploadProgress > 0 && (
               <View className="flex flex-col gap-1 mt-1">
-                <Text className="text-xs text-slate-500 font-bold text-right">
+                <Text className="text-xs text-slate-400 font-bold text-right">
                   Uploading Image: {Math.round(uploadProgress * 100)}%
                 </Text>
-                <View className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <View className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
                   <View style={{ width: `${uploadProgress * 100}%` }} className="h-full bg-[#0D9488]" />
                 </View>
               </View>
@@ -260,8 +260,8 @@ export default function ExpensesScreen() {
           )}
 
           {expensesData?.expenses && expensesData.expenses.length > 0 && (
-            <Animated.View entering={FadeInDown.duration(400).delay(100)} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-4 mb-6">
-              <Text className="text-slate-800 text-base font-extrabold">
+            <Animated.View entering={FadeInDown.duration(400).delay(100)} className="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-4 mb-6">
+              <Text className="text-slate-100 text-base font-extrabold">
                 Expense History
               </Text>
               <View className="flex flex-col gap-3">
@@ -281,13 +281,13 @@ export default function ExpensesScreen() {
                   });
 
                   return (
-                    <View key={item.id} className="flex-row items-center justify-between border-b border-slate-50 pb-3">
+                    <View key={item.id} className="flex-row items-center justify-between border-b border-slate-700 pb-3">
                       <View className="flex-row items-center gap-3 flex-1">
-                        <Image source={{ uri: item.image_url }} className="w-10 h-10 rounded-lg bg-slate-100" />
+                        <Image source={{ uri: item.image_url }} className="w-10 h-10 rounded-lg bg-slate-700" />
                         <View className="flex-1 mr-2">
-                          <Text className="text-sm font-bold text-slate-800">{catMeta?.label || item.category}</Text>
+                          <Text className="text-sm font-bold text-slate-100">{catMeta?.label || item.category}</Text>
                           {item.note ? (
-                            <Text className="text-xs text-slate-500 italic mt-0.5" numberOfLines={2}>{item.note}</Text>
+                            <Text className="text-xs text-slate-400 italic mt-0.5" numberOfLines={2}>{item.note}</Text>
                           ) : null}
                         </View>
                       </View>

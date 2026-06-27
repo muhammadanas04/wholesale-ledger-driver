@@ -72,7 +72,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#EAEAE6]">
+    <SafeAreaView className="flex-1 bg-[#121212]">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -94,7 +94,7 @@ export default function LoginScreen() {
             <Text className="text-3xl font-extrabold text-[#0D9488]">
               Wholesale Driver
             </Text>
-            <Text className="text-sm text-slate-500 mt-1">
+            <Text className="text-sm text-slate-400 mt-1">
               Enter your details to get started
             </Text>
           </Animated.View>
@@ -102,7 +102,7 @@ export default function LoginScreen() {
           {/* Form Fields */}
           <Animated.View entering={FadeInDown.duration(400).delay(150)} className="flex flex-col gap-4 mb-6">
             <View>
-              <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Phone Number
               </Text>
               <TextInput
@@ -114,12 +114,12 @@ export default function LoginScreen() {
                 maxLength={10}
                 onFocus={() => setPhoneFocused(true)}
                 onBlur={() => setPhoneFocused(false)}
-                className={`w-full bg-white text-[#111115] px-4 py-3.5 rounded-2xl border ${phoneFocused ? 'border-[#0D9488]' : 'border-slate-200'} text-base`}
+                className={`w-full bg-[#1C1C1E] text-white px-4 py-3.5 rounded-2xl border ${phoneFocused ? 'border-[#0D9488]' : 'border-[#2C2C2E]'} text-base`}
               />
             </View>
 
             <View>
-              <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                 OTP
               </Text>
               <TextInput
@@ -131,15 +131,15 @@ export default function LoginScreen() {
                 maxLength={6}
                 onFocus={() => setOtpFocused(true)}
                 onBlur={() => setOtpFocused(false)}
-                className={`w-full bg-white text-[#111115] px-4 py-3.5 rounded-2xl border ${otpFocused ? 'border-[#0D9488]' : 'border-slate-200'} text-base`}
+                className={`w-full bg-[#1C1C1E] text-white px-4 py-3.5 rounded-2xl border ${otpFocused ? 'border-[#0D9488]' : 'border-[#2C2C2E]'} text-base`}
               />
             </View>
           </Animated.View>
 
           {/* Error message */}
           {error && (
-            <View className="bg-red-50 border border-red-200 px-4 py-3 rounded-2xl mb-6">
-              <Text className="text-sm text-red-600 font-semibold text-center">
+            <View className="bg-red-900/30 border border-red-900/50 px-4 py-3 rounded-2xl mb-6">
+              <Text className="text-sm text-red-400 font-semibold text-center">
                 {error}
               </Text>
             </View>

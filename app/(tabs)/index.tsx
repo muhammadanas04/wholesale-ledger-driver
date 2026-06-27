@@ -26,7 +26,7 @@ import ProgressBar from '../../components/ProgressBar';
 import EmptyState from '../../components/EmptyState';
 import Icon from '../../components/Icon';
 
-type FilterType = 'all' | 'pending' | 'done' | 'rejected';
+type FilterType = 'active' | 'history';
 
 export default function OrdersScreen() {
   const queryClient = useQueryClient();
@@ -34,7 +34,7 @@ export default function OrdersScreen() {
   const netInfo = useNetInfo();
   const isOffline = netInfo.isConnected === false;
 
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('active');
   const [editingItem, setEditingItem] = useState<DeliveryItem | null>(null);
   const [editQty, setEditQty] = useState('');
   const [editWeight, setEditWeight] = useState('');
@@ -66,14 +66,14 @@ export default function OrdersScreen() {
         <TouchableOpacity
           onPress={handleLogout}
           activeOpacity={0.7}
-          className="mr-4 px-3 py-1.5 bg-red-50 rounded-full flex-row items-center gap-1 active:scale-95"
+          className="mr-4 px-3 py-1.5 bg-red-900/30 rounded-full flex-row items-center gap-1 active:scale-95"
         >
           <Icon
             name={{ ios: 'power', android: 'logout', web: 'logout' }}
             size={14}
-            tintColor="#EF4444"
+            tintColor="#F87171"
           />
-          <Text className="text-red-600 font-bold text-xs">Logout</Text>
+          <Text className="text-red-400 font-bold text-xs">Logout</Text>
         </TouchableOpacity>
       ),
     });
@@ -206,8 +206,9 @@ export default function OrdersScreen() {
   });
 
   const filteredItems = sortedItems.filter((item) => {
-    if (activeFilter === 'all') return true;
-    return item.status === activeFilter;
+    if (activeFilter === 'active') return item.status === 'pending';
+    if (activeFilter === 'history') return item.status === 'done' || item.status === 'rejected';
+    return true;
   });
 
   // Progress computation (for Active Progress Card)
@@ -283,11 +284,11 @@ export default function OrdersScreen() {
         activeOpacity={0.8}
         className={`px-5 py-2.5 rounded-full border ${isSelected
             ? 'bg-[#0D9488] border-[#0D9488]'
-            : 'bg-white border-slate-200'
+            : 'bg-slate-800 border-slate-700'
           } active:scale-95`}
       >
         <Text
-          className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-500'
+          className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-400'
             }`}
         >
           {label}
@@ -312,10 +313,10 @@ export default function OrdersScreen() {
     return (
       <ScreenBackground className="justify-center items-center p-6">
         <Icon name={{ ios: 'exclamationmark.triangle.fill', android: 'report-problem', web: 'report-problem' }} size={48} tintColor="#EF4444" />
-        <Text className="text-slate-800 text-lg font-bold mt-4 text-center">
+        <Text className="text-slate-100 text-lg font-bold mt-4 text-center">
           Failed to load orders
         </Text>
-        <Text className="text-slate-500 text-sm mt-2 text-center max-w-[280px] mb-4">
+        <Text className="text-slate-400 text-sm mt-2 text-center max-w-[280px] mb-4">
           {error instanceof Error ? error.message : 'Please check your connection and try again.'}
         </Text>
 
@@ -331,9 +332,9 @@ export default function OrdersScreen() {
           <TouchableOpacity
             onPress={handleLogout}
             activeOpacity={0.8}
-            className="bg-red-50 border border-red-200 py-4 rounded-2xl active:scale-95 flex-1 items-center"
+            className="bg-red-900/30 border border-red-900/50 py-4 rounded-2xl active:scale-95 flex-1 items-center"
           >
-            <Text className="text-red-600 font-bold text-base">Logout</Text>
+            <Text className="text-red-400 font-bold text-base">Logout</Text>
           </TouchableOpacity>
         </View>
       </ScreenBackground>
@@ -344,28 +345,28 @@ export default function OrdersScreen() {
     <ScreenBackground>
       {/* ── Active Progress Card (Misleading label fixed to All Delivery Progress) ── */}
       {totalItemsCount > 0 && (
-        <Animated.View entering={FadeInDown.duration(400)} className="bg-white m-4 p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-3">
+        <Animated.View entering={FadeInDown.duration(400)} className="bg-slate-800 m-4 p-5 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-3">
           <View className="flex-row justify-between items-center">
-            <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider">
               All Delivery Progress
             </Text>
-            <Text className="text-slate-800 text-sm font-extrabold">
+            <Text className="text-slate-100 text-sm font-extrabold">
               {completedItemsCount} / {totalItemsCount} Done
             </Text>
           </View>
           <ProgressBar completed={completedItemsCount} total={totalItemsCount} />
-          <View className="flex-row justify-between border-t border-slate-100 pt-3">
-            <View className="flex-row items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full">
-              <Icon name={{ ios: 'clock.fill', android: 'schedule', web: 'schedule' }} size={12} tintColor="#D97706" />
-              <Text className="text-amber-700 font-bold text-xs">{pendingCount} Pending</Text>
+          <View className="flex-row justify-between border-t border-slate-700 pt-3">
+            <View className="flex-row items-center gap-1.5 bg-amber-900/30 px-3 py-1.5 rounded-full">
+              <Icon name={{ ios: 'clock.fill', android: 'schedule', web: 'schedule' }} size={12} tintColor="#FBBF24" />
+              <Text className="text-amber-400 font-bold text-xs">{pendingCount} Pending</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-full">
-              <Icon name={{ ios: 'checkmark.circle.fill', android: 'check-circle', web: 'check-circle' }} size={12} tintColor="#059669" />
-              <Text className="text-emerald-700 font-bold text-xs">{doneCount} Done</Text>
+            <View className="flex-row items-center gap-1.5 bg-emerald-900/30 px-3 py-1.5 rounded-full">
+              <Icon name={{ ios: 'checkmark.circle.fill', android: 'check-circle', web: 'check-circle' }} size={12} tintColor="#34D399" />
+              <Text className="text-emerald-400 font-bold text-xs">{doneCount} Done</Text>
             </View>
-            <View className="flex-row items-center gap-1.5 bg-red-50 px-3 py-1.5 rounded-full">
-              <Icon name={{ ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' }} size={12} tintColor="#DC2626" />
-              <Text className="text-red-700 font-bold text-xs">{rejectedCount} Rejected</Text>
+            <View className="flex-row items-center gap-1.5 bg-red-900/30 px-3 py-1.5 rounded-full">
+              <Icon name={{ ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' }} size={12} tintColor="#F87171" />
+              <Text className="text-red-400 font-bold text-xs">{rejectedCount} Rejected</Text>
             </View>
           </View>
         </Animated.View>
@@ -373,10 +374,8 @@ export default function OrdersScreen() {
 
       {/* ── Filter row ── */}
       <View className="px-4 pb-3 flex-row gap-2.5">
-        {renderFilterPill('all', 'All')}
-        {renderFilterPill('pending', 'Pending')}
-        {renderFilterPill('done', 'Done')}
-        {renderFilterPill('rejected', 'Rejected')}
+        {renderFilterPill('active', 'Active')}
+        {renderFilterPill('history', 'History')}
       </View>
 
       {/* ── Delivery Item list ── */}
@@ -398,11 +397,11 @@ export default function OrdersScreen() {
         ListEmptyComponent={
           <EmptyState
             icon={{ ios: 'list.bullet.clipboard', android: 'assignment', web: 'assignment' }}
-            title={activeFilter === 'all' ? 'No orders yet' : `No ${activeFilter} orders`}
+            title={activeFilter === 'active' ? 'No active orders' : 'No order history'}
             subtitle={
-              activeFilter === 'all'
-                ? 'Delivery assignments from admin will appear here.'
-                : 'Try changing your status filter.'
+              activeFilter === 'active'
+                ? 'Pending assignments will appear here.'
+                : 'Completed or rejected orders will appear here.'
             }
           />
         }
@@ -419,14 +418,14 @@ export default function OrdersScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1 justify-end bg-black/50"
         >
-          <View className="bg-white rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
+          <View className="bg-slate-900 rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
             <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-xl font-extrabold text-slate-800">
+              <Text className="text-xl font-extrabold text-slate-100">
                 Edit Order Details
               </Text>
               <TouchableOpacity
                 onPress={() => setEditingItem(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 justify-center items-center"
+                className="w-8 h-8 rounded-full bg-slate-800 justify-center items-center"
               >
                 <Icon
                   name={{ ios: 'xmark', android: 'close', web: 'close' }}
@@ -438,7 +437,7 @@ export default function OrdersScreen() {
 
             <View className="flex flex-col gap-4">
               <View>
-                <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Quantity (Required)
                 </Text>
                 <TextInput
@@ -447,12 +446,12 @@ export default function OrdersScreen() {
                   keyboardType="number-pad"
                   placeholder="Enter Quantity"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-base text-slate-800 font-bold"
+                  className="bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3.5 text-base text-white font-bold"
                 />
               </View>
 
               <View>
-                <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Weight in kg (Optional)
                 </Text>
                 <TextInput
@@ -461,7 +460,7 @@ export default function OrdersScreen() {
                   keyboardType="decimal-pad"
                   placeholder="Enter Weight"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-base text-slate-800 font-bold"
+                  className="bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3.5 text-base text-white font-bold"
                 />
               </View>
             </View>
@@ -484,9 +483,9 @@ export default function OrdersScreen() {
               <TouchableOpacity
                 onPress={() => setEditingItem(null)}
                 activeOpacity={0.8}
-                className="w-full py-4 rounded-2xl items-center justify-center border border-slate-200 active:scale-95"
+                className="w-full py-4 rounded-2xl items-center justify-center border border-slate-700 active:scale-95"
               >
-                <Text className="text-slate-600 font-bold text-base">Cancel</Text>
+                <Text className="text-slate-300 font-bold text-base">Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -60,8 +60,8 @@ export default function StockScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Current Stock Dashboard */}
-          <Animated.View entering={FadeInDown.duration(400)} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-4 mb-6">
-            <Text className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+          <Animated.View entering={FadeInDown.duration(400)} className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-4 mb-6">
+            <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider">
               Current Carried Stock
             </Text>
 
@@ -72,7 +72,7 @@ export default function StockScreen() {
                 <Text className="text-[#0D9488] text-3xl font-extrabold mt-1">
                   {stock.qty}
                 </Text>
-                <Text className="text-slate-600 font-bold text-sm">
+                <Text className="text-slate-300 font-bold text-sm">
                   Items
                 </Text>
               </View>
@@ -83,7 +83,7 @@ export default function StockScreen() {
                 <Text className="text-[#0284C7] text-3xl font-extrabold mt-1">
                   {Number(stock.weight.toFixed(2))}
                 </Text>
-                <Text className="text-slate-600 font-bold text-sm">
+                <Text className="text-slate-300 font-bold text-sm">
                   kg Carrying
                 </Text>
               </View>
@@ -95,14 +95,14 @@ export default function StockScreen() {
           </Animated.View>
 
           {/* Update Stock Form */}
-          <Animated.View entering={FadeInDown.duration(400).delay(100)} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-5 mb-6">
-            <Text className="text-slate-800 text-lg font-extrabold mb-1">
+          <Animated.View entering={FadeInDown.duration(400).delay(100)} className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-5 mb-6">
+            <Text className="text-slate-100 text-lg font-extrabold mb-1">
               Load Carrying Stock
             </Text>
 
             <View className="flex flex-col gap-4">
               <View>
-                <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Quantity
                 </Text>
                 <TextInput
@@ -111,12 +111,12 @@ export default function StockScreen() {
                   keyboardType="number-pad"
                   placeholder="Enter total items carrying"
                   placeholderTextColor="#94A3B8"
-                  className="w-full bg-slate-50 text-[#111115] px-4 py-3.5 rounded-2xl border border-slate-200 text-base font-bold"
+                  className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-2xl border border-slate-700 text-base font-bold"
                 />
               </View>
 
               <View>
-                <Text className="text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Weight (kg)
                 </Text>
                 <TextInput
@@ -125,7 +125,7 @@ export default function StockScreen() {
                   keyboardType="decimal-pad"
                   placeholder="Enter total weight in kg"
                   placeholderTextColor="#94A3B8"
-                  className="w-full bg-slate-50 text-[#111115] px-4 py-3.5 rounded-2xl border border-slate-200 text-base font-bold"
+                  className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-2xl border border-slate-700 text-base font-bold"
                 />
               </View>
             </View>
@@ -141,13 +141,13 @@ export default function StockScreen() {
           </Animated.View>
 
           {/* Info Card */}
-          <View className="bg-slate-100 p-5 rounded-3xl border border-slate-200/50 flex-row gap-3 items-center">
+          <View className="bg-slate-800 p-5 rounded-3xl border border-slate-700 flex-row gap-3 items-center">
             <Icon
               name={{ ios: 'info.circle.fill', android: 'info', web: 'info' }}
               size={24}
-              tintColor="#475569"
+              tintColor="#94A3B8"
             />
-            <Text className="text-slate-600 text-xs font-bold leading-relaxed flex-1">
+            <Text className="text-slate-300 text-xs font-bold leading-relaxed flex-1">
               Note: This sets the exact stock amount carried. There is only one type of wholesale item.
             </Text>
           </View>

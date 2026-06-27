@@ -27,15 +27,15 @@ export default function CategoryPicker({ selectedCategory, onSelect }: CategoryP
             key={cat.key}
             onPress={() => onSelect(cat.key)}
             activeOpacity={0.8}
-            className={`w-[48%] bg-white p-4 rounded-2xl border flex flex-col gap-2.5 items-center justify-center active:scale-95 ${
+            className={`w-[48%] bg-slate-800 p-4 rounded-2xl border flex flex-col gap-2.5 items-center justify-center active:scale-95 ${
               isSelected
                 ? 'bg-[#0D9488]/5 border-[#0D9488]'
-                : 'border-slate-200'
+                : 'border-slate-700'
             }`}
           >
             <View
               className={`w-12 h-12 rounded-full items-center justify-center ${
-                isSelected ? 'bg-[#0D9488]/15' : 'bg-slate-100'
+                isSelected ? 'bg-[#0D9488]/15' : 'bg-slate-700'
               }`}
             >
               <Icon
@@ -46,7 +46,7 @@ export default function CategoryPicker({ selectedCategory, onSelect }: CategoryP
             </View>
             <Text
               className={`text-sm font-bold text-center ${
-                isSelected ? 'text-[#0D9488]' : 'text-slate-600'
+                isSelected ? 'text-[#0D9488]' : 'text-slate-300'
               }`}
             >
               {cat.label}

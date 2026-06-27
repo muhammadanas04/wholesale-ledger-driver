@@ -68,12 +68,12 @@ export default function OrderCard({
   };
 
   return (
-    <Animated.View entering={FadeInDown.duration(300)} style={{ borderLeftWidth: 3, borderLeftColor: isPending ? '#0D9488' : item.status === 'done' ? '#10B981' : '#EF4444' }} className="bg-white rounded-3xl p-5 mb-4 border border-slate-100 shadow-md flex flex-col gap-4">
+    <Animated.View entering={FadeInDown.duration(300)} style={{ borderLeftWidth: 3, borderLeftColor: isPending ? '#0D9488' : item.status === 'done' ? '#10B981' : '#EF4444' }} className="bg-slate-800 rounded-3xl p-5 mb-4 border border-slate-700 shadow-md flex flex-col gap-4">
       {/* Top row: Customer name & status badge */}
       <View className="flex-row justify-between items-start">
         <View className="flex-row items-center gap-3 flex-1 mr-2">
           {/* Status Indicator Dot */}
-          <View className="w-10 h-10 rounded-full items-center justify-center bg-slate-50">
+          <View className="w-10 h-10 rounded-full items-center justify-center bg-slate-700">
             {item.status === 'done' ? (
               <Icon name={{ ios: 'checkmark.circle.fill', android: 'check-circle', web: 'check-circle' }} size={24} tintColor="#10B981" />
             ) : item.status === 'rejected' ? (
@@ -83,7 +83,7 @@ export default function OrderCard({
             )}
           </View>
           <View className="flex-1">
-            <Text className="text-lg font-bold text-slate-800 leading-snug">
+            <Text className="text-lg font-bold text-slate-100 leading-snug">
               {item.customer_name || 'Unknown Customer'}
             </Text>
             {item.customer_phone ? (
@@ -127,9 +127,9 @@ export default function OrderCard({
 
       {/* Address */}
       {item.address ? (
-        <View className="flex-row items-start gap-1.5 bg-slate-50 p-3.5 rounded-2xl">
+        <View className="flex-row items-start gap-1.5 bg-slate-700 p-3.5 rounded-2xl">
           <Text className="text-slate-500 mt-0.5">📍</Text>
-          <Text className="text-slate-600 text-sm flex-1 leading-relaxed">
+          <Text className="text-slate-300 text-sm flex-1 leading-relaxed">
             {item.address}
           </Text>
         </View>
@@ -137,21 +137,21 @@ export default function OrderCard({
 
       {/* Items Details: Qty, Weight, Price Badges */}
       <View className="flex-row flex-wrap gap-2">
-        <View className="bg-slate-100 px-3.5 py-2 rounded-xl">
-          <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider">Qty</Text>
-          <Text className="text-base font-extrabold text-slate-800 mt-0.5">{item.qty ?? 0}</Text>
+        <View className="bg-slate-700/50 px-3.5 py-2 rounded-xl">
+          <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider">Qty</Text>
+          <Text className="text-base font-extrabold text-slate-100 mt-0.5">{item.qty ?? 0}</Text>
         </View>
 
         {item.weight !== null && item.weight !== undefined ? (
-          <View className="bg-slate-100 px-3.5 py-2 rounded-xl">
-            <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider">Weight</Text>
-            <Text className="text-base font-extrabold text-slate-800 mt-0.5">{item.weight} kg</Text>
+          <View className="bg-slate-700/50 px-3.5 py-2 rounded-xl">
+            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider">Weight</Text>
+            <Text className="text-base font-extrabold text-slate-100 mt-0.5">{item.weight} kg</Text>
           </View>
         ) : null}
 
         {item.total_price !== null && item.total_price !== undefined ? (
-          <View className="bg-slate-100 px-3.5 py-2 rounded-xl">
-            <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider">Price</Text>
+          <View className="bg-slate-700/50 px-3.5 py-2 rounded-xl">
+            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider">Price</Text>
             <Text className="text-base font-extrabold text-[#0D9488] mt-0.5">
               {formatPrice(item.total_price)}
             </Text>
@@ -161,8 +161,8 @@ export default function OrderCard({
 
       {/* Notes */}
       {item.notes ? (
-        <View className="border-t border-slate-100 pt-3 flex-row gap-1">
-          <Text className="text-xs italic text-slate-500 font-medium leading-relaxed">
+        <View className="border-t border-slate-700 pt-3 flex-row gap-1">
+          <Text className="text-xs italic text-slate-400 font-medium leading-relaxed">
             Note: {item.notes}
           </Text>
         </View>
@@ -170,7 +170,7 @@ export default function OrderCard({
 
       {/* Action Buttons (Only shown if pending & not read-only) */}
       {isPending && !isReadOnly && (
-        <View className="flex-row gap-2.5 mt-2 border-t border-slate-100 pt-4">
+        <View className="flex-row gap-2.5 mt-2 border-t border-slate-700 pt-4">
           <TouchableOpacity
             onPress={confirmDone}
             disabled={isMutating}
@@ -197,11 +197,11 @@ export default function OrderCard({
             onPress={() => onEdit(item)}
             disabled={isMutating}
             activeOpacity={0.8}
-            className={`px-5 py-3.5 bg-slate-100 rounded-2xl items-center justify-center active:scale-95 ${
+            className={`px-5 py-3.5 bg-slate-700 rounded-2xl items-center justify-center active:scale-95 ${
               isMutating ? 'opacity-50' : ''
             }`}
           >
-            <Text className="text-slate-700 text-base font-bold">Edit ✎</Text>
+            <Text className="text-slate-200 text-base font-bold">Edit ✎</Text>
           </TouchableOpacity>
         </View>
       )}
