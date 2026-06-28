@@ -6,12 +6,20 @@ export interface DeliveryItem {
   customer_phone: string;
   address: string;
   qty: number | null;              // Quantity (nullable from API)
+  stock_amount: number | null;     // Original stock amount, used as fallback for qty
   weight: number | null;           // Optional
   total_price: number | null;      // Optional, in paise
   status: 'pending' | 'done' | 'rejected';
   notes: string | null;
   created_at: string;              // ISO 8601
   updated_at: string;
+}
+
+// ── Customer ──
+export interface Customer {
+  id: string;
+  name: string;
+  address: string;
 }
 
 // ── A delivery batch (one or many items assigned to this driver) ──

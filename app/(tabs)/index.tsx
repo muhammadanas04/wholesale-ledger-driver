@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +39,16 @@ export default function OrdersScreen() {
   const [editingItem, setEditingItem] = useState<DeliveryItem | null>(null);
   const [editQty, setEditQty] = useState('');
   const [editWeight, setEditWeight] = useState('');
+  const [hasSubmittedEdit, setHasSubmittedEdit] = useState(false);
+
+  // ── Create Order State ──
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createAddress, setCreateAddress] = useState('');
+  const [createQty, setCreateQty] = useState('');
+  const [createWeight, setCreateWeight] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
 
   const logout = useAppStore((s) => s.logout);
   const updateLastOrderReceived = useAppStore((s) => s.updateLastOrderReceived);
@@ -90,6 +101,15 @@ export default function OrdersScreen() {
     },
     refetchInterval: 15000,
     refetchIntervalInBackground: false,
+  });
+
+  // ── Query for customers ──
+  const { data: customersData } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      return await api.getCustomers();
+    },
+    enabled: isCreateModalVisible,
   });
 
   // ── Optimistic Status Mutation (Done / Reject) ──
@@ -193,6 +213,36 @@ export default function OrdersScreen() {
     },
   });
 
+  // ── Optimistic Create Mutation ──
+  const createMutation = useMutation({
+    mutationFn: async (data: { customer_name: string; address: string; qty: number; weight: number }) => {
+      const result = await api.createDeliveryItem(data);
+      if (!result.ok) {
+        throw new Error('Server rejected creation');
+      }
+      return result;
+    },
+    onSuccess: () => {
+      Toast.show({
+        type: 'success',
+        text1: 'Order created ✓',
+      });
+      setIsCreateModalVisible(false);
+      setCreateName('');
+      setCreateAddress('');
+      setCreateQty('');
+      setCreateWeight('');
+      setHasSubmittedCreate(false);
+      queryClient.invalidateQueries({ queryKey: ['my-deliveries'] });
+    },
+    onError: () => {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to create order',
+      });
+    }
+  });
+
   // ── Process and Flatten items ──
   const allItems = data?.deliveries?.flatMap((d) => d.items) || [];
 
@@ -242,8 +292,10 @@ export default function OrdersScreen() {
 
   const handleOpenEdit = (item: DeliveryItem) => {
     setEditingItem(item);
-    setEditQty(item.qty != null ? item.qty.toString() : '');
+    const initialQty = item.qty ?? item.stock_amount;
+    setEditQty(initialQty != null ? initialQty.toString() : '');
     setEditWeight(item.weight != null ? item.weight.toString() : '');
+    setHasSubmittedEdit(false);
   };
 
   const handleSaveEdit = async () => {
@@ -256,20 +308,63 @@ export default function OrdersScreen() {
     }
     if (!editingItem) return;
 
+    setHasSubmittedEdit(true);
+    if (editQty.trim() === '' || editWeight.trim() === '') {
+      return;
+    }
+
     const qty = parseInt(editQty.trim(), 10);
     if (isNaN(qty) || qty <= 0) {
       Alert.alert('Invalid Input', 'Quantity must be at least 1');
       return;
     }
 
-    const weight = editWeight.trim() !== '' ? parseFloat(editWeight.trim()) : null;
-    if (weight !== null && (isNaN(weight) || weight < 0)) {
+    const weight = parseFloat(editWeight.trim());
+    if (isNaN(weight) || weight < 0) {
       Alert.alert('Invalid Input', 'Weight must be a positive number');
       return;
     }
 
     await editMutation.mutateAsync({
       itemId: editingItem.id,
+      qty,
+      weight,
+    });
+  };
+
+  const filteredCustomers = customersData?.customers.filter(c => 
+    c.name.toLowerCase().includes(createName.toLowerCase())
+  ) || [];
+
+  const handleSelectCustomer = (customer: { name: string; address: string }) => {
+    setCreateName(customer.name);
+    setCreateAddress(customer.address);
+    setShowSuggestions(false);
+  };
+
+  const handleSaveCreate = async () => {
+    if (isOffline) {
+      Toast.show({ type: 'error', text1: 'You need internet to create orders.' });
+      return;
+    }
+    setHasSubmittedCreate(true);
+    if (!createName.trim() || !createQty.trim() || !createWeight.trim()) return;
+
+    const qty = parseInt(createQty.trim(), 10);
+    if (isNaN(qty) || qty <= 0) {
+      Alert.alert('Invalid Input', 'Quantity must be at least 1');
+      return;
+    }
+
+    const weight = parseFloat(createWeight.trim());
+    if (isNaN(weight) || weight < 0) {
+      Alert.alert('Invalid Input', 'Weight must be a positive number');
+      return;
+    }
+
+    await createMutation.mutateAsync({
+      customer_name: createName.trim(),
+      address: createAddress.trim(),
       qty,
       weight,
     });
@@ -283,8 +378,8 @@ export default function OrdersScreen() {
         onPress={() => setActiveFilter(filter)}
         activeOpacity={0.8}
         className={`px-5 py-2.5 rounded-full border ${isSelected
-            ? 'bg-[#0D9488] border-[#0D9488]'
-            : 'bg-slate-800 border-slate-700'
+          ? 'bg-[#0D9488] border-[#0D9488]'
+          : 'bg-slate-800 border-slate-700'
           } active:scale-95`}
       >
         <Text
@@ -407,6 +502,15 @@ export default function OrdersScreen() {
         }
       />
 
+      {/* ── Create Order FAB ── */}
+      <TouchableOpacity
+        onPress={() => setIsCreateModalVisible(true)}
+        activeOpacity={0.8}
+        className="absolute bottom-6 right-6 w-14 h-14 bg-[#0D9488] rounded-full items-center justify-center shadow-lg flex-row z-10 active:scale-95"
+      >
+        <Icon name={{ ios: 'plus', android: 'add', web: 'add' }} size={28} tintColor="#FFF" />
+      </TouchableOpacity>
+
       {/* ── Edit Order details modal ── */}
       <Modal
         visible={editingItem !== null}
@@ -415,7 +519,7 @@ export default function OrdersScreen() {
         onRequestClose={() => setEditingItem(null)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior="padding"
           className="flex-1 justify-end bg-black/50"
         >
           <View className="bg-slate-900 rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
@@ -438,7 +542,7 @@ export default function OrdersScreen() {
             <View className="flex flex-col gap-4">
               <View>
                 <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                  Quantity (Required)
+                  Quantity
                 </Text>
                 <TextInput
                   value={editQty}
@@ -446,13 +550,15 @@ export default function OrdersScreen() {
                   keyboardType="number-pad"
                   placeholder="Enter Quantity"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3.5 text-base text-white font-bold"
+                  className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
+                    hasSubmittedEdit && editQty.trim() === '' ? 'border-red-500' : 'border-slate-700'
+                  }`}
                 />
               </View>
 
               <View>
                 <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                  Weight in kg (Optional)
+                  Weight in kg
                 </Text>
                 <TextInput
                   value={editWeight}
@@ -460,7 +566,9 @@ export default function OrdersScreen() {
                   keyboardType="decimal-pad"
                   placeholder="Enter Weight"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3.5 text-base text-white font-bold"
+                  className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
+                    hasSubmittedEdit && editWeight.trim() === '' ? 'border-red-500' : 'border-slate-700'
+                  }`}
                 />
               </View>
             </View>
@@ -486,6 +594,138 @@ export default function OrdersScreen() {
                 className="w-full py-4 rounded-2xl items-center justify-center border border-slate-700 active:scale-95"
               >
                 <Text className="text-slate-300 font-bold text-base">Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Create Order Modal ── */}
+      <Modal
+        visible={isCreateModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsCreateModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="flex-1 justify-end bg-black/50"
+        >
+          <View className="bg-slate-900 rounded-t-[32dp] px-6 py-8 flex flex-col gap-5 max-h-[85%]">
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-xl font-extrabold text-slate-100">
+                Create Order
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIsCreateModalVisible(false)}
+                className="w-8 h-8 rounded-full bg-slate-800 justify-center items-center"
+              >
+                <Icon
+                  name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                  size={16}
+                  tintColor="#64748B"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
+              <View className="flex flex-col gap-4">
+                <View>
+                  <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Customer Name
+                  </Text>
+                  <TextInput
+                    value={createName}
+                    onChangeText={(text) => {
+                      setCreateName(text);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Enter customer name"
+                    placeholderTextColor="#94A3B8"
+                    className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
+                      hasSubmittedCreate && !createName.trim() ? 'border-red-500' : 'border-slate-700'
+                    }`}
+                  />
+                  
+                  {/* Autocomplete Suggestions */}
+                  {showSuggestions && createName.length > 0 && filteredCustomers.length > 0 && (
+                    <View className="bg-slate-800 border border-slate-700 rounded-xl mt-2 overflow-hidden max-h-48">
+                      {filteredCustomers.slice(0, 5).map(item => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => handleSelectCustomer(item)}
+                          className="px-4 py-3 border-b border-slate-700/50"
+                        >
+                          <Text className="text-white font-bold text-base">{item.name}</Text>
+                          {item.address ? <Text className="text-slate-400 text-sm mt-0.5" numberOfLines={1}>{item.address}</Text> : null}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                <View>
+                  <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Address
+                  </Text>
+                  <TextInput
+                    value={createAddress}
+                    onChangeText={setCreateAddress}
+                    placeholder="Enter address"
+                    placeholderTextColor="#94A3B8"
+                    className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold border-slate-700`}
+                  />
+                </View>
+
+                <View className="flex-row gap-4">
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Quantity
+                    </Text>
+                    <TextInput
+                      value={createQty}
+                      onChangeText={setCreateQty}
+                      keyboardType="number-pad"
+                      placeholder="Qty"
+                      placeholderTextColor="#94A3B8"
+                      className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
+                        hasSubmittedCreate && !createQty.trim() ? 'border-red-500' : 'border-slate-700'
+                      }`}
+                    />
+                  </View>
+                  
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Weight (kg)
+                    </Text>
+                    <TextInput
+                      value={createWeight}
+                      onChangeText={setCreateWeight}
+                      keyboardType="decimal-pad"
+                      placeholder="Weight"
+                      placeholderTextColor="#94A3B8"
+                      className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
+                        hasSubmittedCreate && !createWeight.trim() ? 'border-red-500' : 'border-slate-700'
+                      }`}
+                    />
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+
+            <View className="flex flex-col gap-3 mt-2">
+              <TouchableOpacity
+                onPress={handleSaveCreate}
+                disabled={createMutation.isPending}
+                activeOpacity={0.8}
+                className={`w-full bg-[#0D9488] py-4 rounded-2xl items-center justify-center active:scale-95 ${createMutation.isPending ? 'opacity-50' : ''}`}
+              >
+                {createMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text className="text-white font-bold text-lg">Create Order</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

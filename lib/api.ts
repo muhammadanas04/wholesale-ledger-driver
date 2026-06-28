@@ -1,5 +1,5 @@
 import { useAppStore } from '../store/app';
-import { AuthResponse, Delivery } from '../types';
+import { AuthResponse, Delivery, Customer, DeliveryItem } from '../types';
 import * as FileSystem from 'expo-file-system/legacy';
 
 export const WORKER_URL = 'https://wholesale-sync.niranjanskr06.workers.dev';
@@ -166,6 +166,31 @@ class DriverApi {
     } catch (err: any) {
       return { ok: false, error: err.message || 'Upload failed' };
     }
+  }
+
+  // ── Customers ──
+  async getCustomers(): Promise<{ customers: Customer[] }> {
+    const res = await fetch(`${this.getWorkerUrl()}/driver/customers`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch customers');
+    return res.json();
+  }
+
+  // ── Create Delivery Item ──
+  async createDeliveryItem(data: {
+    customer_name: string;
+    address: string;
+    qty: number;
+    weight: number;
+  }): Promise<{ ok: boolean; item?: DeliveryItem }> {
+    const res = await fetch(`${this.getWorkerUrl()}/driver/delivery-items`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create order');
+    return res.json();
   }
 }
 

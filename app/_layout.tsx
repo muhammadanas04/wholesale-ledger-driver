@@ -32,7 +32,8 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (data) {
     const { locations } = data as any;
     if (locations && locations.length > 0) {
-      const { latitude, longitude } = locations[0].coords;
+      const latestLocation = locations[locations.length - 1];
+      const { latitude, longitude } = latestLocation.coords;
       try {
         const { session } = useAppStore.getState();
         if (!session) {

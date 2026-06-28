@@ -41,12 +41,12 @@ export default function OrderCard({
   const confirmDone = () => {
     Alert.alert(
       'Mark as Done?',
-      `${item.customer_name || 'Unknown Customer'}\nQuantity: ${item.qty ?? 0}${item.weight ? ` · Weight: ${item.weight} kg` : ''}`,
+      `${item.customer_name || 'Unknown Customer'}\nQuantity: ${item.qty ?? item.stock_amount ?? 0}${item.weight ? ` · Weight: ${item.weight} kg` : ''}`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm',
-          onPress: () => onDone(item.id, item.qty ?? 0, item.weight ?? 0),
+          onPress: () => onDone(item.id, item.qty ?? item.stock_amount ?? 0, item.weight ?? 0),
         },
       ]
     );
@@ -139,7 +139,7 @@ export default function OrderCard({
       <View className="flex-row flex-wrap gap-2">
         <View className="bg-slate-700/50 px-3.5 py-2 rounded-xl">
           <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider">Qty</Text>
-          <Text className="text-base font-extrabold text-slate-100 mt-0.5">{item.qty ?? 0}</Text>
+          <Text className="text-base font-extrabold text-slate-100 mt-0.5">{item.qty ?? item.stock_amount ?? 0}</Text>
         </View>
 
         {item.weight !== null && item.weight !== undefined ? (
