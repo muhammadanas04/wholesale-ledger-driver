@@ -1,31 +1,30 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useNetInfo } from '@react-native-community/netinfo';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
   ActivityIndicator,
+  Alert,
+  FlatList,
   KeyboardAvoidingView,
-  Platform,
+  Modal,
   ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
-import { useNavigation } from 'expo-router';
-import { useNetInfo } from '@react-native-community/netinfo';
 
-import { useAppStore } from '../../store/app';
-import { api } from '../../lib/api';
-import { DeliveryItem } from '../../types';
-import ScreenBackground from '../../components/ScreenBackground';
-import OrderCard from '../../components/OrderCard';
-import ProgressBar from '../../components/ProgressBar';
 import EmptyState from '../../components/EmptyState';
 import Icon from '../../components/Icon';
+import OrderCard from '../../components/OrderCard';
+import ProgressBar from '../../components/ProgressBar';
+import ScreenBackground from '../../components/ScreenBackground';
+import { api } from '../../lib/api';
+import { useAppStore } from '../../store/app';
+import { DeliveryItem } from '../../types';
 
 type FilterType = 'active' | 'history';
 
@@ -51,6 +50,36 @@ export default function OrdersScreen() {
   const [hasSubmittedCreate, setHasSubmittedCreate] = useState(false);
 
   const logout = useAppStore((s) => s.logout);
+  const stock = useAppStore((s) => s.stock);
+  const setStock = useAppStore((s) => s.setStock);
+  const [isStockModalVisible, setIsStockModalVisible] = useState(false);
+  const [stockInputQty, setStockInputQty] = useState('');
+  const [stockInputWeight, setStockInputWeight] = useState('');
+  
+  const handleUpdateStock = () => {
+    const qty = parseInt(stockInputQty.trim(), 10);
+    if (stockInputQty.trim() === '' || isNaN(qty) || qty < 0) {
+      Alert.alert('Invalid Input', 'Please enter a valid positive quantity');
+      return;
+    }
+    const weight = parseFloat(stockInputWeight.trim());
+    if (stockInputWeight.trim() === '' || isNaN(weight) || weight < 0) {
+      Alert.alert('Invalid Input', 'Please enter a valid positive weight');
+      return;
+    }
+    setStock({ qty, weight });
+    Toast.show({
+      type: 'success',
+      text1: 'Stock updated successfully ✓',
+    });
+    setIsStockModalVisible(false);
+  };
+  
+  const openStockEdit = () => {
+    setStockInputQty(stock.qty.toString());
+    setStockInputWeight(stock.weight.toString());
+    setIsStockModalVisible(true);
+  };
   const updateLastOrderReceived = useAppStore((s) => s.updateLastOrderReceived);
   const deductStock = useAppStore((s) => s.deductStock);
   const session = useAppStore((s) => s.session);
@@ -74,18 +103,32 @@ export default function OrdersScreen() {
     navigation.setOptions({
       headerTitle: 'My Orders',
       headerRight: () => (
-        <TouchableOpacity
-          onPress={handleLogout}
-          activeOpacity={0.7}
-          className="mr-4 px-3 py-1.5 bg-red-900/30 rounded-full flex-row items-center gap-1 active:scale-95"
-        >
-          <Icon
-            name={{ ios: 'power', android: 'logout', web: 'logout' }}
-            size={14}
-            tintColor="#F87171"
-          />
-          <Text className="text-red-400 font-bold text-xs">Logout</Text>
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-3 mr-4">
+          <TouchableOpacity
+            onPress={() => (navigation as any).navigate('expenses')}
+            activeOpacity={0.7}
+            className="px-3 py-1.5 bg-palette-dark rounded-full flex-row items-center gap-1 active:scale-95"
+          >
+            <Icon
+              name={{ ios: 'indianrupeesign.circle', android: 'receipt', web: 'receipt' }}
+              size={14}
+              tintColor="#DAF1DE"
+            />
+            <Text className="text-palette-lightest font-bold text-xs">Expenses</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleLogout}
+            activeOpacity={0.7}
+            className="px-3 py-1.5 bg-red-900/30 rounded-full flex-row items-center gap-1 active:scale-95"
+          >
+            <Icon
+              name={{ ios: 'power', android: 'logout', web: 'logout' }}
+              size={14}
+              tintColor="#F87171"
+            />
+            <Text className="text-red-400 font-bold text-xs">Logout</Text>
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation, handleLogout]);
@@ -332,7 +375,7 @@ export default function OrdersScreen() {
     });
   };
 
-  const filteredCustomers = customersData?.customers.filter(c => 
+  const filteredCustomers = customersData?.customers.filter(c =>
     c.name.toLowerCase().includes(createName.toLowerCase())
   ) || [];
 
@@ -378,12 +421,12 @@ export default function OrdersScreen() {
         onPress={() => setActiveFilter(filter)}
         activeOpacity={0.8}
         className={`px-5 py-2.5 rounded-full border ${isSelected
-          ? 'bg-[#0D9488] border-[#0D9488]'
-          : 'bg-slate-800 border-slate-700'
+          ? 'bg-palette-primary border-palette-primary'
+          : 'bg-palette-darker border-palette-dark'
           } active:scale-95`}
       >
         <Text
-          className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-400'
+          className={`text-sm font-bold ${isSelected ? 'text-palette-lightest' : 'text-palette-light'
             }`}
         >
           {label}
@@ -396,7 +439,7 @@ export default function OrdersScreen() {
     return (
       <ScreenBackground className="justify-center items-center">
         <ActivityIndicator size="large" color="#0D9488" />
-        <Text className="text-slate-500 font-bold mt-4 text-sm">
+        <Text className="text-palette-light font-bold mt-4 text-sm">
           Loading orders...
         </Text>
       </ScreenBackground>
@@ -408,10 +451,10 @@ export default function OrdersScreen() {
     return (
       <ScreenBackground className="justify-center items-center p-6">
         <Icon name={{ ios: 'exclamationmark.triangle.fill', android: 'report-problem', web: 'report-problem' }} size={48} tintColor="#EF4444" />
-        <Text className="text-slate-100 text-lg font-bold mt-4 text-center">
+        <Text className="text-palette-lightest text-lg font-bold mt-4 text-center">
           Failed to load orders
         </Text>
-        <Text className="text-slate-400 text-sm mt-2 text-center max-w-[280px] mb-4">
+        <Text className="text-palette-light text-sm mt-2 text-center max-w-[280px] mb-4">
           {error instanceof Error ? error.message : 'Please check your connection and try again.'}
         </Text>
 
@@ -419,9 +462,9 @@ export default function OrdersScreen() {
           <TouchableOpacity
             onPress={() => refetch()}
             activeOpacity={0.8}
-            className="bg-[#0D9488] py-4 rounded-2xl active:scale-95 flex-1 items-center"
+            className="bg-palette-primary py-4 rounded-2xl active:scale-95 flex-1 items-center"
           >
-            <Text className="text-white font-bold text-base">Retry</Text>
+            <Text className="text-palette-lightest font-bold text-base">Retry</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -438,19 +481,45 @@ export default function OrdersScreen() {
 
   return (
     <ScreenBackground>
+      {/* ── Stock Information ── */}
+      <Animated.View entering={FadeInDown.duration(400)} className="bg-palette-darker m-4 mb-0 p-5 rounded-3xl border border-palette-dark shadow-sm flex flex-col gap-4">
+        <View className="flex-row justify-between items-center">
+          <Text className="text-palette-light text-xs font-bold uppercase tracking-wider">
+            Current Stock
+          </Text>
+          <TouchableOpacity onPress={openStockEdit} className="bg-palette-primary/20 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+            <Icon name={{ ios: 'pencil', android: 'edit', web: 'edit' }} size={12} tintColor="#235347" />
+            <Text className="text-palette-primary font-bold text-xs">Edit</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex-row gap-4">
+          <View className="flex-1 bg-palette-primary/5 p-4 rounded-2xl border border-palette-primary/10 items-center justify-center gap-1">
+            <Icon name={{ ios: 'shippingbox.fill', android: 'inventory-2', web: 'inventory-2' }} size={20} tintColor="#235347" />
+            <Text className="text-palette-primary text-2xl font-extrabold mt-1">{stock.qty}</Text>
+            <Text className="text-palette-lightest font-bold text-xs">Items</Text>
+          </View>
+          <View className="flex-1 bg-[#0284C7]/5 p-4 rounded-2xl border border-[#0284C7]/10 items-center justify-center gap-1">
+            <Icon name={{ ios: 'scalemass.fill', android: 'fitness-center', web: 'fitness-center' }} size={20} tintColor="#0284C7" />
+            <Text className="text-[#0284C7] text-2xl font-extrabold mt-1">{Number(stock.weight.toFixed(2))}</Text>
+            <Text className="text-palette-lightest font-bold text-xs">kg</Text>
+          </View>
+        </View>
+      </Animated.View>
+
       {/* ── Active Progress Card (Misleading label fixed to All Delivery Progress) ── */}
       {totalItemsCount > 0 && (
-        <Animated.View entering={FadeInDown.duration(400)} className="bg-slate-800 m-4 p-5 rounded-3xl border border-slate-700 shadow-sm flex flex-col gap-3">
+        <Animated.View entering={FadeInDown.duration(400)} className="bg-palette-darker m-4 p-5 rounded-3xl border border-palette-dark shadow-sm flex flex-col gap-3">
           <View className="flex-row justify-between items-center">
-            <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+            <Text className="text-palette-light text-xs font-bold uppercase tracking-wider">
               All Delivery Progress
             </Text>
-            <Text className="text-slate-100 text-sm font-extrabold">
+            <Text className="text-palette-lightest text-sm font-extrabold">
               {completedItemsCount} / {totalItemsCount} Done
             </Text>
           </View>
           <ProgressBar completed={completedItemsCount} total={totalItemsCount} />
-          <View className="flex-row justify-between border-t border-slate-700 pt-3">
+          <View className="flex-row justify-between border-t border-palette-dark pt-3">
             <View className="flex-row items-center gap-1.5 bg-amber-900/30 px-3 py-1.5 rounded-full">
               <Icon name={{ ios: 'clock.fill', android: 'schedule', web: 'schedule' }} size={12} tintColor="#FBBF24" />
               <Text className="text-amber-400 font-bold text-xs">{pendingCount} Pending</Text>
@@ -506,9 +575,9 @@ export default function OrdersScreen() {
       <TouchableOpacity
         onPress={() => setIsCreateModalVisible(true)}
         activeOpacity={0.8}
-        className="absolute bottom-6 right-6 w-14 h-14 bg-[#0D9488] rounded-full items-center justify-center shadow-lg flex-row z-10 active:scale-95"
+        className="absolute bottom-6 right-6 w-14 h-14 bg-palette-primary rounded-full items-center justify-center shadow-lg flex-row z-10 active:scale-95"
       >
-        <Icon name={{ ios: 'plus', android: 'add', web: 'add' }} size={28} tintColor="#FFF" />
+        <Icon name={{ ios: 'plus', android: 'add', web: 'add' }} size={28} tintColor="#DAF1DE" />
       </TouchableOpacity>
 
       {/* ── Edit Order details modal ── */}
@@ -520,16 +589,16 @@ export default function OrdersScreen() {
       >
         <KeyboardAvoidingView
           behavior="padding"
-          className="flex-1 justify-end bg-black/50"
+          className="flex-1 justify-end bg-palette-darkest/70"
         >
-          <View className="bg-slate-900 rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
+          <View className="bg-palette-darkest rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
             <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-xl font-extrabold text-slate-100">
+              <Text className="text-xl font-extrabold text-palette-lightest">
                 Edit Order Details
               </Text>
               <TouchableOpacity
                 onPress={() => setEditingItem(null)}
-                className="w-8 h-8 rounded-full bg-slate-800 justify-center items-center"
+                className="w-8 h-8 rounded-full bg-palette-darker justify-center items-center"
               >
                 <Icon
                   name={{ ios: 'xmark', android: 'close', web: 'close' }}
@@ -541,7 +610,7 @@ export default function OrdersScreen() {
 
             <View className="flex flex-col gap-4">
               <View>
-                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                   Quantity
                 </Text>
                 <TextInput
@@ -550,14 +619,13 @@ export default function OrdersScreen() {
                   keyboardType="number-pad"
                   placeholder="Enter Quantity"
                   placeholderTextColor="#94A3B8"
-                  className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
-                    hasSubmittedEdit && editQty.trim() === '' ? 'border-red-500' : 'border-slate-700'
-                  }`}
+                  className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold ${hasSubmittedEdit && editQty.trim() === '' ? 'border-red-500' : 'border-palette-dark'
+                    }`}
                 />
               </View>
 
               <View>
-                <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                   Weight in kg
                 </Text>
                 <TextInput
@@ -566,9 +634,8 @@ export default function OrdersScreen() {
                   keyboardType="decimal-pad"
                   placeholder="Enter Weight"
                   placeholderTextColor="#94A3B8"
-                  className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
-                    hasSubmittedEdit && editWeight.trim() === '' ? 'border-red-500' : 'border-slate-700'
-                  }`}
+                  className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold ${hasSubmittedEdit && editWeight.trim() === '' ? 'border-red-500' : 'border-palette-dark'
+                    }`}
                 />
               </View>
             </View>
@@ -578,24 +645,51 @@ export default function OrdersScreen() {
                 onPress={handleSaveEdit}
                 disabled={editMutation.isPending}
                 activeOpacity={0.8}
-                className={`w-full bg-[#0D9488] py-4 rounded-2xl items-center justify-center active:scale-95 ${editMutation.isPending ? 'opacity-50' : ''
+                className={`w-full bg-palette-primary py-4 rounded-2xl items-center justify-center active:scale-95 ${editMutation.isPending ? 'opacity-50' : ''
                   }`}
               >
                 {editMutation.isPending ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                  <Text className="text-white font-bold text-lg">Save Changes</Text>
+                  <Text className="text-palette-lightest font-bold text-lg">Save Changes</Text>
                 )}
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setEditingItem(null)}
                 activeOpacity={0.8}
-                className="w-full py-4 rounded-2xl items-center justify-center border border-slate-700 active:scale-95"
+                className="w-full py-4 rounded-2xl items-center justify-center border border-palette-dark active:scale-95"
               >
-                <Text className="text-slate-300 font-bold text-base">Cancel</Text>
+                <Text className="text-palette-lightest font-bold text-base">Cancel</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Edit Stock Modal ── */}
+      <Modal visible={isStockModalVisible} animationType="slide" transparent={true} onRequestClose={() => setIsStockModalVisible(false)}>
+        <KeyboardAvoidingView behavior="padding" className="flex-1 justify-end bg-palette-darkest/70">
+          <View className="bg-palette-darker rounded-t-[32dp] px-6 py-8 flex flex-col gap-6">
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-xl font-extrabold text-palette-lightest">Edit Stock</Text>
+              <TouchableOpacity onPress={() => setIsStockModalVisible(false)} className="w-8 h-8 rounded-full bg-palette-dark justify-center items-center">
+                <Icon name={{ ios: 'xmark', android: 'close', web: 'close' }} size={16} tintColor="#DAF1DE" />
+              </TouchableOpacity>
+            </View>
+            <View className="flex flex-col gap-4">
+              <View>
+                <Text className="text-xs font-bold text-palette-light mb-1.5 uppercase tracking-wider">Quantity</Text>
+                <TextInput value={stockInputQty} onChangeText={setStockInputQty} keyboardType="number-pad" placeholder="Qty" placeholderTextColor="#8EB69B" className="bg-palette-darkest border border-palette-dark rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold" />
+              </View>
+              <View>
+                <Text className="text-xs font-bold text-palette-light mb-1.5 uppercase tracking-wider">Weight (kg)</Text>
+                <TextInput value={stockInputWeight} onChangeText={setStockInputWeight} keyboardType="decimal-pad" placeholder="Weight" placeholderTextColor="#8EB69B" className="bg-palette-darkest border border-palette-dark rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold" />
+              </View>
+            </View>
+            <TouchableOpacity onPress={handleUpdateStock} className="w-full bg-palette-primary py-4 rounded-2xl items-center justify-center mt-2">
+              <Text className="text-palette-lightest text-lg font-bold">Save Stock</Text>
+            </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -608,17 +702,17 @@ export default function OrdersScreen() {
         onRequestClose={() => setIsCreateModalVisible(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="flex-1 justify-end bg-black/50"
+          behavior="padding"
+          className="flex-1 justify-end bg-palette-darkest/70"
         >
-          <View className="bg-slate-900 rounded-t-[32dp] px-6 py-8 flex flex-col gap-5 max-h-[85%]">
+          <View className="bg-palette-darkest rounded-t-[32dp] px-6 py-8 flex flex-col gap-5 max-h-[85%]">
             <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-xl font-extrabold text-slate-100">
+              <Text className="text-xl font-extrabold text-palette-lightest">
                 Create Order
               </Text>
               <TouchableOpacity
                 onPress={() => setIsCreateModalVisible(false)}
-                className="w-8 h-8 rounded-full bg-slate-800 justify-center items-center"
+                className="w-8 h-8 rounded-full bg-palette-darker justify-center items-center"
               >
                 <Icon
                   name={{ ios: 'xmark', android: 'close', web: 'close' }}
@@ -631,7 +725,7 @@ export default function OrdersScreen() {
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
               <View className="flex flex-col gap-4">
                 <View>
-                  <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                  <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                     Customer Name
                   </Text>
                   <TextInput
@@ -643,22 +737,21 @@ export default function OrdersScreen() {
                     onFocus={() => setShowSuggestions(true)}
                     placeholder="Enter customer name"
                     placeholderTextColor="#94A3B8"
-                    className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
-                      hasSubmittedCreate && !createName.trim() ? 'border-red-500' : 'border-slate-700'
-                    }`}
+                    className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold ${hasSubmittedCreate && !createName.trim() ? 'border-red-500' : 'border-palette-dark'
+                      }`}
                   />
-                  
+
                   {/* Autocomplete Suggestions */}
                   {showSuggestions && createName.length > 0 && filteredCustomers.length > 0 && (
-                    <View className="bg-slate-800 border border-slate-700 rounded-xl mt-2 overflow-hidden max-h-48">
+                    <View className="bg-palette-darker border border-palette-dark rounded-xl mt-2 overflow-hidden max-h-48">
                       {filteredCustomers.slice(0, 5).map(item => (
                         <TouchableOpacity
                           key={item.id}
                           onPress={() => handleSelectCustomer(item)}
-                          className="px-4 py-3 border-b border-slate-700/50"
+                          className="px-4 py-3 border-b border-palette-dark/50"
                         >
-                          <Text className="text-white font-bold text-base">{item.name}</Text>
-                          {item.address ? <Text className="text-slate-400 text-sm mt-0.5" numberOfLines={1}>{item.address}</Text> : null}
+                          <Text className="text-palette-lightest font-bold text-base">{item.name}</Text>
+                          {item.address ? <Text className="text-palette-light text-sm mt-0.5" numberOfLines={1}>{item.address}</Text> : null}
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -666,7 +759,7 @@ export default function OrdersScreen() {
                 </View>
 
                 <View>
-                  <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                  <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                     Address
                   </Text>
                   <TextInput
@@ -674,13 +767,13 @@ export default function OrdersScreen() {
                     onChangeText={setCreateAddress}
                     placeholder="Enter address"
                     placeholderTextColor="#94A3B8"
-                    className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold border-slate-700`}
+                    className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold border-palette-dark`}
                   />
                 </View>
 
                 <View className="flex-row gap-4">
                   <View className="flex-1">
-                    <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                       Quantity
                     </Text>
                     <TextInput
@@ -689,14 +782,13 @@ export default function OrdersScreen() {
                       keyboardType="number-pad"
                       placeholder="Qty"
                       placeholderTextColor="#94A3B8"
-                      className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
-                        hasSubmittedCreate && !createQty.trim() ? 'border-red-500' : 'border-slate-700'
-                      }`}
+                      className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold ${hasSubmittedCreate && !createQty.trim() ? 'border-red-500' : 'border-palette-dark'
+                        }`}
                     />
                   </View>
-                  
+
                   <View className="flex-1">
-                    <Text className="text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    <Text className="text-xs font-bold text-palette-lightest mb-1.5 uppercase tracking-wider">
                       Weight (kg)
                     </Text>
                     <TextInput
@@ -705,9 +797,8 @@ export default function OrdersScreen() {
                       keyboardType="decimal-pad"
                       placeholder="Weight"
                       placeholderTextColor="#94A3B8"
-                      className={`bg-slate-800 border rounded-2xl px-4 py-3.5 text-base text-white font-bold ${
-                        hasSubmittedCreate && !createWeight.trim() ? 'border-red-500' : 'border-slate-700'
-                      }`}
+                      className={`bg-palette-darker border rounded-2xl px-4 py-3.5 text-base text-palette-lightest font-bold ${hasSubmittedCreate && !createWeight.trim() ? 'border-red-500' : 'border-palette-dark'
+                        }`}
                     />
                   </View>
                 </View>
@@ -719,12 +810,12 @@ export default function OrdersScreen() {
                 onPress={handleSaveCreate}
                 disabled={createMutation.isPending}
                 activeOpacity={0.8}
-                className={`w-full bg-[#0D9488] py-4 rounded-2xl items-center justify-center active:scale-95 ${createMutation.isPending ? 'opacity-50' : ''}`}
+                className={`w-full bg-palette-primary py-4 rounded-2xl items-center justify-center active:scale-95 ${createMutation.isPending ? 'opacity-50' : ''}`}
               >
                 {createMutation.isPending ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                  <Text className="text-white font-bold text-lg">Create Order</Text>
+                  <Text className="text-palette-lightest font-bold text-lg">Create Order</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -12,18 +12,18 @@ interface EmptyStateProps {
 export default function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
   return (
     <Animated.View entering={FadeIn.duration(400)} className="flex-1 items-center justify-center p-8 mt-12">
-      <View className="w-20 h-20 bg-slate-800/50 rounded-full items-center justify-center mb-4">
+      <View className="w-20 h-20 bg-palette-darker/50 rounded-full items-center justify-center mb-4">
         <Icon
           name={icon}
           size={40}
-          tintColor="#64748B"
+          tintColor="#8EB69B"
         />
       </View>
-      <Text className="text-xl font-bold text-slate-100 text-center">
+      <Text className="text-xl font-bold text-palette-lightest text-center">
         {title}
       </Text>
       {subtitle && (
-        <Text className="text-sm text-slate-500 text-center mt-2 max-w-[280px]">
+        <Text className="text-sm text-palette-light text-center mt-2 max-w-[280px]">
           {subtitle}
         </Text>
       )}

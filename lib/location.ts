@@ -27,20 +27,26 @@ export async function isLocationEnabled(): Promise<boolean> {
  * Start watching location and reporting to the server.
  */
 export async function startLocationTracking(): Promise<void> {
-  const isStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
-  if (!isStarted) {
-    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-      accuracy: Location.Accuracy.Balanced,
-      timeInterval: 15000, // Report at least every 15 seconds
-      distanceInterval: 50, // Report when moved 50m+
-      foregroundService: {
-        notificationTitle: 'Wholesale Driver Active',
-        notificationBody: 'Tracking location for active delivery assignments.',
-        notificationColor: '#0D9488',
-      },
-      showsBackgroundLocationIndicator: true,
-    });
-    console.log('[Location] Started background location updates');
+  try {
+    const isStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+    if (!isStarted) {
+      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+        accuracy: Location.Accuracy.High, 
+        timeInterval: 15000, 
+        distanceInterval: 50, // Reverted back to 50 meters for production battery life
+        foregroundService: {
+          notificationTitle: 'Wholesale Driver Active',
+          notificationBody: 'Tracking location for active delivery assignments.',
+          notificationColor: '#0D9488',
+        },
+        showsBackgroundLocationIndicator: true,
+      });
+      console.log('[Location] Started background location updates');
+    }
+  } catch (err: any) {
+    console.error('[Location] Failed to start tracking:', err);
+    // Expose this native error to the UI so we can see why it's failing on Android
+    alert(`Location Tracking Error: ${err.message}`);
   }
 }
 

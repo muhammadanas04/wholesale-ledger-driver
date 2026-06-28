@@ -41,8 +41,14 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
         }
         await api.reportLocation(latitude, longitude);
         console.log('[BackgroundLocationTask] Reported successfully:', latitude, longitude);
-      } catch (err) {
+      } catch (err: any) {
         console.log('[BackgroundLocationTask] Failed to report location (offline or server down):', err);
+        // Toast works in foreground to show network/token errors that were previously swallowed
+        Toast.show({
+          type: 'error',
+          text1: 'Location Sync Failed',
+          text2: err.message,
+        });
       }
     }
   }
