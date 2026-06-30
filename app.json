@@ -4,7 +4,7 @@
     "slug": "wholesale-driver",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/car.png",
     "scheme": "wholesaledriver",
     "userInterfaceStyle": "dark",
     "ios": {
@@ -28,7 +28,7 @@
       ],
       "adaptiveIcon": {
         "backgroundColor": "#0D9488",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/car.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
@@ -37,7 +37,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/car.png"
     },
     "plugins": [
       "expo-router",

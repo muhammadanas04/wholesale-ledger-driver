@@ -37,6 +37,15 @@ export default function OrderCard({
     }).format(rupees);
   };
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}`;
+  };
+
   const handleCall = () => {
     if (item.customer_phone) {
       Linking.openURL(`tel:${item.customer_phone}`);
@@ -133,6 +142,11 @@ export default function OrderCard({
         </View>
 
         <View className="flex-row items-center gap-2">
+          {item.created_at ? (
+            <Text className="text-brand-steel text-[11px] font-semibold mr-1">
+              {formatDate(item.created_at)}
+            </Text>
+          ) : null}
           <View 
             className={`px-2.5 py-1 rounded-full border flex-row items-center gap-1 ${
               isDone 

@@ -56,7 +56,7 @@ export default function OrdersScreen() {
   const [isStockModalVisible, setIsStockModalVisible] = useState(false);
   const [stockInputQty, setStockInputQty] = useState('');
   const [stockInputWeight, setStockInputWeight] = useState('');
-  
+
   const handleUpdateStock = () => {
     const qty = parseInt(stockInputQty.trim(), 10);
     if (stockInputQty.trim() === '' || isNaN(qty) || qty < 0) {
@@ -75,7 +75,7 @@ export default function OrdersScreen() {
     });
     setIsStockModalVisible(false);
   };
-  
+
   const openStockEdit = () => {
     setStockInputQty(stock.qty.toString());
     setStockInputWeight(stock.weight.toString());
@@ -440,10 +440,7 @@ export default function OrdersScreen() {
   return (
     <ScreenBackground>
       {/* ── Custom Header ── */}
-      <View className="px-6 pt-6 pb-2">
-        <Text className="text-brand-steel text-[10px] font-bold tracking-[0.15em] mb-1">
-          OPERATIONAL DISPATCH
-        </Text>
+      <View className="px-10 pt-6 pb-2">
         <View className="flex-row justify-between items-center">
           <Text className="text-brand-silver text-[28px] font-extrabold tracking-tight">
             My Orders
@@ -599,7 +596,7 @@ export default function OrdersScreen() {
       <TouchableOpacity
         onPress={() => setIsCreateModalVisible(true)}
         activeOpacity={0.8}
-        className="absolute bottom-10 right-6 w-14 h-14 bg-[#E0D8D8] rounded-[24px] items-center justify-center shadow-lg flex-row z-10 active:scale-95"
+        className="absolute bottom-20 right-6 w-14 h-14 bg-[#E0D8D8] rounded-[24px] items-center justify-center shadow-lg flex-row z-10 active:scale-95"
       >
         <Icon name={{ ios: 'plus', android: 'add', web: 'add' }} size={24} tintColor="#0F1516" />
       </TouchableOpacity>
