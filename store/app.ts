@@ -56,7 +56,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch {
       // corrupted storage — force re-login
-      await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+      try {
+        await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+      } catch (e) {
+        console.warn('Failed to delete corrupted secure store', e);
+      }
       set({ session: null, isLoggedIn: false });
     }
   },

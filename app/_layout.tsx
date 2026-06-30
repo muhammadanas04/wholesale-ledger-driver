@@ -54,7 +54,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   }
 });
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [queryClient] = useState(
@@ -86,9 +86,11 @@ export default function RootLayout() {
 
   // ── Init store from SecureStore ──
   useEffect(() => {
-    initStore().then(() => {
-      setIsStoreReady(true);
-    });
+    initStore()
+      .catch((err) => console.error('[InitStore] Error:', err))
+      .finally(() => {
+        setIsStoreReady(true);
+      });
   }, []);
 
   // ── Hide splash screen once fonts and store are ready ──
