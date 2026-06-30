@@ -1,31 +1,31 @@
-const tintColor = '#235347'; // palette-primary
+const tintColor = '#234C58'; // brand-petrol
 
 export default {
   light: {
-    text: '#DAF1DE', // palette-lightest
-    background: '#051F20', // palette-darkest
-    surface: '#0B2B26', // palette-darker
-    surfaceSolid: '#0B2B26',
-    border: '#163832', // palette-dark
+    text: '#C9C2C2', // brand-silver
+    background: '#0F1516', // brand-darkest
+    surface: '#162224', // brand-deep
+    surfaceSolid: '#162224',
+    border: '#1b282b', // brand-dark
     tint: tintColor,
-    tabIconDefault: '#8EB69B', // palette-light
+    tabIconDefault: '#7F8C94', // brand-steel
     tabIconSelected: tintColor,
-    accent: '#235347',
-    success: '#8EB69B',
-    danger: '#EF4444', // keep standard danger
+    accent: '#234C58',
+    success: '#C9C2C2',
+    danger: '#EF4444', 
     warning: '#F59E0B',
   },
   dark: {
-    text: '#DAF1DE',
-    background: '#051F20',
-    surface: '#0B2B26',
-    surfaceSolid: '#0B2B26',
-    border: '#163832',
+    text: '#C9C2C2',
+    background: '#0F1516',
+    surface: '#162224',
+    surfaceSolid: '#162224',
+    border: '#1b282b',
     tint: tintColor,
-    tabIconDefault: '#8EB69B',
+    tabIconDefault: '#7F8C94',
     tabIconSelected: tintColor,
-    accent: '#235347',
-    success: '#8EB69B',
+    accent: '#234C58',
+    success: '#C9C2C2',
     danger: '#F87171',
     warning: '#FBBF24',
   },

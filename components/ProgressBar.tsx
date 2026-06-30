@@ -25,16 +25,16 @@ export default function ProgressBar({ completed, total, height = 10 }: ProgressB
   return (
     <View className="flex-row items-center gap-3">
       {/* ProgressBar Track */}
-      <View style={{ height }} className="flex-1 bg-slate-700/80 rounded-full overflow-hidden">
+      <View style={{ height, padding: 2 }} className="flex-1 bg-brand-darkest rounded-full border border-brand-petrol/40">
         {/* ProgressBar Fill */}
         <Animated.View
-          style={[{ height }, animatedStyle]}
-          className="bg-[#0D9488] rounded-full"
+          style={[{ height: '100%' }, animatedStyle]}
+          className="bg-brand-silver rounded-full"
         />
       </View>
       {/* Percentage Text */}
-      <View className="bg-[#0D9488]/10 px-2.5 py-1 rounded-full">
-        <Text className="text-sm font-extrabold text-[#0D9488]">
+      <View className="bg-brand-petrol/40 border border-brand-steel/20 px-2 py-0.5 rounded-full">
+        <Text className="text-[11px] font-bold text-brand-silver">
           {percentage}%
         </Text>
       </View>
