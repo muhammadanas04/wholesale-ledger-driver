@@ -133,6 +133,14 @@ export default function ExpensesScreen() {
     }
   };
 
+  const twoMonthsAgo = new Date();
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
+  const filteredExpenses = expensesData?.expenses?.filter((item: any) => {
+    const itemDate = new Date(item.created_at || Date.now());
+    return itemDate >= twoMonthsAgo;
+  }) || [];
+
   return (
     <ScreenBackground>
       <KeyboardAvoidingView
@@ -259,13 +267,13 @@ export default function ExpensesScreen() {
             </View>
           )}
 
-          {expensesData?.expenses && expensesData.expenses.length > 0 && (
+          {filteredExpenses.length > 0 && (
             <Animated.View entering={FadeInDown.duration(400).delay(100)} className="bg-brand-deep p-5 rounded-3xl border border-brand-petrol/40 shadow-sm flex flex-col gap-4 mb-6">
               <Text className="text-brand-silver text-base font-extrabold">
                 Expense History
               </Text>
               <View className="flex flex-col gap-3">
-                {expensesData.expenses.map((item: any) => {
+                {filteredExpenses.map((item: any) => {
                   const catMeta = EXPENSE_CATEGORIES.find((c) => c.key === item.category);
                   const displayAmount = catMeta?.amountType === 'price'
                     ? `₹${(item.amount / 100).toFixed(2)}`

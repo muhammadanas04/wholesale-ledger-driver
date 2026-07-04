@@ -260,7 +260,13 @@ export default function OrdersScreen() {
   });
 
   // ── Process and Flatten items ──
-  const allItems = data?.deliveries?.flatMap((d) => d.items) || [];
+  const allItems = (data?.deliveries?.flatMap((d) => d.items) || []).filter((item) => {
+    // Automatically clear history older than 2 months
+    const itemDate = new Date(item.created_at || item.updated_at || Date.now());
+    const twoMonthsAgo = new Date();
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+    return itemDate >= twoMonthsAgo;
+  });
 
   // Sort: Pending first, then Done, then Rejected
   const sortedItems = [...allItems].sort((a, b) => {

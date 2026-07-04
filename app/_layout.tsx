@@ -6,12 +6,13 @@ import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
-import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, AppState, AppStateStatus } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
 import * as Linking from 'expo-linking';
+import * as Updates from 'expo-updates';
 
 import { useAppStore } from '../store/app';
 import { api } from '../lib/api';
@@ -83,6 +84,38 @@ export default function RootLayout() {
   const insets = useSafeAreaInsets();
   const netInfo = useNetInfo();
   const isOffline = netInfo.isConnected === false;
+
+  const { isUpdatePending, isDownloading } = Updates.useUpdates();
+
+  // ── Auto-Updates checking ──
+  useEffect(() => {
+    if (!Updates.isEnabled) return;
+
+    const checkAndDownloadUpdate = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+        }
+      } catch (err) {
+        console.log('[Updates] Error checking/downloading update:', err);
+      }
+    };
+
+    // Run an initial check on mount
+    checkAndDownloadUpdate();
+
+    // Check again whenever the app comes back to the foreground
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkAndDownloadUpdate();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // ── Init store from SecureStore ──
   useEffect(() => {
@@ -203,6 +236,18 @@ export default function RootLayout() {
           </View>
         )}
 
+        {/* Downloading updates banner */}
+        {isDownloading && (
+          <View style={{ paddingTop: insets.top }} className="bg-brand-petrol">
+            <View className="px-4 py-2 flex-row items-center justify-center gap-2">
+              <ActivityIndicator size="small" color="#C9C2C2" />
+              <Text className="text-white text-xs font-bold text-center">
+                Downloading latest updates in background...
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* ── Blocking Full-Screen Location Overlay ── */}
         {isLoggedIn && locationError && (
           <View className="absolute inset-0 bg-slate-900 z-[9999] justify-center items-center px-6 flex flex-col gap-6">
@@ -247,6 +292,40 @@ export default function RootLayout() {
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
+
+        {/* ── Auto-Update Reload Prompt Overlay ── */}
+        {isUpdatePending && (
+          <View className="absolute inset-0 bg-brand-darkest/95 z-[10000] justify-center items-center px-6">
+            <View className="bg-brand-deep border border-[#1b282b] p-6 rounded-3xl w-full max-w-sm items-center shadow-2xl">
+              <View className="w-16 h-16 bg-brand-petrol/30 rounded-full items-center justify-center mb-4 border border-brand-petrol/50">
+                <Icon
+                  name={{ ios: 'arrow.clockwise.circle.fill', android: 'update', web: 'update' }}
+                  size={36}
+                  tintColor="#C9C2C2"
+                />
+              </View>
+              <Text className="text-xl font-bold text-white text-center mb-2">
+                Update Available
+              </Text>
+              <Text className="text-sm text-brand-steel text-center mb-6 leading-relaxed">
+                A new version of Wholesale Driver has been downloaded. Restart the app to apply the update and continue.
+              </Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    await Updates.reloadAsync();
+                  } catch (err) {
+                    console.error('[Updates] Failed to reload app:', err);
+                  }
+                }}
+                activeOpacity={0.8}
+                className="w-full bg-[#0D9488] py-4 rounded-2xl items-center justify-center active:scale-95 shadow-md"
+              >
+                <Text className="text-white font-bold text-base">Restart Now</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
       <Toast />
     </QueryClientProvider>

@@ -19,6 +19,7 @@
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.6",
     "expo-task-manager": "~56.0.19",
+    "expo-updates": "~56.0.20",
     "expo-web-browser": "~56.0.5",
     "nativewind": "^4.2.5",
     "react": "19.2.3",
