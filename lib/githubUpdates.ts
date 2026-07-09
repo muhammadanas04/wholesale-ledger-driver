@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 const GITHUB_REPO = 'muhammadanas04/wholesale-ledger-driver';
 const APK_NAME = 'driver-app.apk';
@@ -58,10 +59,39 @@ export async function downloadAndInstallApk(downloadUrl: string) {
   try {
     const fileUri = `${FileSystem.documentDirectory}${APK_NAME}`;
     
-    // Download the file
-    const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        await FileSystem.deleteAsync(fileUri);
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    let lastUpdate = 0;
+    const downloadResumable = FileSystem.createDownloadResumable(
+      downloadUrl,
+      fileUri,
+      {},
+      (downloadProgress) => {
+        const progress = Math.round((downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite) * 100);
+        if (progress >= lastUpdate + 5 || progress === 100) {
+          lastUpdate = progress;
+          Toast.show({
+            type: 'info',
+            text1: 'Downloading update...',
+            text2: `Progress: ${progress}%`,
+            autoHide: false,
+          });
+        }
+      }
+    );
+
+    const downloadResult = await downloadResumable.downloadAsync();
     
-    if (downloadResult.status !== 200) {
+    Toast.hide();
+
+    if (!downloadResult || downloadResult.status !== 200) {
       throw new Error('Failed to download APK');
     }
 
@@ -75,6 +105,7 @@ export async function downloadAndInstallApk(downloadUrl: string) {
       type: 'application/vnd.android.package-archive',
     });
   } catch (error) {
+    Toast.hide();
     console.error('[GitHubUpdates] Error downloading or installing APK:', error);
     throw error;
   }
